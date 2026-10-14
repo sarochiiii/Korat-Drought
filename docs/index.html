@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>แผนที่ภัยแล้ง จังหวัดนครราชสีมา | Korat Drought WebMap</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌾</text></svg>">
+  <!-- Pinned versions: reproducible for every student -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <aside id="panel">
+    <header>
+      <p class="eyebrow">412345 Internet Mapping · Lab</p>
+      <h1>แผนที่ภัยแล้ง<br>จังหวัดนครราชสีมา</h1>
+      <p class="sub">ดัชนีภัยแล้งจากข้อมูลดาวเทียมรายอำเภอ พ.ศ. <span id="yearRangeTh">–</span></p>
+    </header>
+
+    <div id="demoBanner" class="banner" hidden>
+      ⚠ ข้อมูลรายอำเภอเป็น <b>ค่าจำลอง (synthetic demo)</b> เพื่อทดสอบหน้าเว็บเท่านั้น
+      ห้ามนำไปแปลผล — ให้แทนที่ด้วยไฟล์ที่ export จาก GEE
+    </div>
+
+    <section>
+      <h2>ดัชนี (Index)</h2>
+      <div id="indexButtons" class="seg"></div>
+      <p id="indexDesc" class="hint"></p>
+    </section>
+
+    <section>
+      <h2>ปี <span id="yearLabel" class="year">–</span></h2>
+      <div class="slider-row">
+        <button id="playBtn" title="เล่นอนิเมชันรายปี" aria-label="play">▶</button>
+        <input id="yearSlider" type="range" min="2015" max="2024" step="1" value="2018">
+      </div>
+    </section>
+
+    <section>
+      <h2>คำอธิบายสัญลักษณ์</h2>
+      <div id="legend"></div>
+    </section>
+
+    <section>
+      <h2>แนวโน้ม <span id="chartTitle"></span></h2>
+      <canvas id="chart" height="190"></canvas>
+      <p class="hint" id="chartHint">คลิกอำเภอบนแผนที่เพื่อเปรียบเทียบกับค่าเฉลี่ยทั้งจังหวัด</p>
+    </section>
+
+    <section>
+      <h2>ชั้นข้อมูล (Layers)</h2>
+      <div id="layerList"></div>
+    </section>
+
+    <footer>
+      <p>ข้อมูล: MODIS MOD13Q1/MOD11A2, CHIRPS, JRC GSW, ESA WorldCover (ประมวลผลด้วย Google Earth Engine) ·
+        ขอบเขตอำเภอ: OpenGISData-Thailand (CC BY 4.0)</p>
+    </footer>
+  </aside>
+
+  <main id="map"></main>
+  <div id="tooltip" hidden></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
