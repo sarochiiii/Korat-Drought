@@ -13,7 +13,7 @@
 
 /* ---------- ส่วนที่ 1 CONFIG ---------- */
 const CONFIG = {
-  demo: true,                                   // false เมื่อใช้ข้อมูลจริง
+  demo: false,                                   // false เมื่อใช้ข้อมูลจริง
   districtsUrl: 'data/demo_districts.geojson',  // → 'data/korat_drought_districts.geojson'
   provinceUrl:  'data/demo_province.csv',       // → 'data/korat_drought_province.csv'
   pngDir: 'data/png/',
