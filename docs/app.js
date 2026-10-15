@@ -13,7 +13,7 @@
 
 /* ---------- ส่วนที่ 1 CONFIG ---------- */
 const CONFIG = {
-  demo: false,                                   // false เมื่อใช้ข้อมูลจริง
+  demo: true,                                   // false เมื่อใช้ข้อมูลจริง
   districtsUrl: 'data/demo_districts.geojson',  // → 'data/korat_drought_districts.geojson'
   provinceUrl:  'data/demo_province.csv',       // → 'data/korat_drought_province.csv'
   pngDir: 'data/png/',
@@ -50,23 +50,44 @@ const state = { index: CONFIG.startIndex, year: CONFIG.startYear, years: [],
                 selected: null, timer: null, data: null, province: [] };
 
 /* ---------- ส่วนที่ 3 Map + basemap ---------- */
+// Keyless raster basemaps (Esri). OSM's public tile servers are not used:
+// they block apps that do not follow the OSM tile usage policy (HTTP 403).
+const ESRI = 'https://server.arcgisonline.com/ArcGIS/rest/services/';
+const BASEMAPS = {
+  'esri-gray': { label: 'แผนที่โทนเทา (Esri Light Gray)', on: true,
+    tiles: [ESRI + 'Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}'], maxzoom: 16, paint: {},
+    attribution: 'Tiles © Esri — Esri and its data providers' },
+  'esri-street': { label: 'แผนที่ถนน (Esri Street)', on: false,
+    tiles: [ESRI + 'World_Street_Map/MapServer/tile/{z}/{y}/{x}'], maxzoom: 18, paint: {},
+    attribution: 'Tiles © Esri — Esri and its data providers' },
+  'esri-imagery': { label: 'ภาพดาวเทียม (Esri)', on: false,
+    tiles: [ESRI + 'World_Imagery/MapServer/tile/{z}/{y}/{x}'], maxzoom: 18, paint: {},
+    attribution: 'Tiles © Esri — Source: Esri, Maxar, Earthstar Geographics, and the GIS User Community' }
+};
+const baseSources = {}, baseLayers = [];
+Object.entries(BASEMAPS).forEach(([id, b]) => {
+  baseSources[id] = { type: 'raster', tiles: b.tiles, tileSize: 256, maxzoom: b.maxzoom, attribution: b.attribution };
+  baseLayers.push({ id: 'base-' + id, type: 'raster', source: id, paint: b.paint,
+                    layout: { visibility: b.on ? 'visible' : 'none' } });
+});
+
 const map = new maplibregl.Map({
   container: 'map',
-  style: {
-    version: 8,
-    sources: {
-      carto: {
-        type: 'raster', tileSize: 256,
-        tiles: ['https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
-                'https://b.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png'],
-        attribution: '© OpenStreetMap contributors © CARTO'
-      }
-    },
-    layers: [{ id: 'basemap', type: 'raster', source: 'carto' }]
-  },
+  style: { version: 8, sources: baseSources, layers: baseLayers },
   bounds: [[CONFIG.bbox[0], CONFIG.bbox[1]], [CONFIG.bbox[2], CONFIG.bbox[3]]],
   fitBoundsOptions: { padding: 30 }
 });
+
+function buildBasemapList() {
+  document.getElementById('basemapList').innerHTML = Object.entries(BASEMAPS).map(([id, b]) => `
+    <label class="layer-row">
+      <input type="radio" name="basemap" value="${id}" ${b.on ? 'checked' : ''}> ${b.label}
+    </label>`).join('');
+  document.querySelectorAll('#basemapList input').forEach(r => r.addEventListener('change', e => {
+    Object.keys(BASEMAPS).forEach(id =>
+      map.setLayoutProperty('base-' + id, 'visibility', id === e.target.value ? 'visible' : 'none'));
+  }));
+}
 map.addControl(new maplibregl.NavigationControl(), 'top-right');
 map.addControl(new maplibregl.ScaleControl({ unit: 'metric' }), 'bottom-right');
 
@@ -83,7 +104,11 @@ async function loadCSV(url) {
   }).sort((a, b) => a.year - b.year);
 }
 async function exists(url) {
-  try { return (await fetch(url, { method: 'HEAD' })).ok; } catch (e) { return false; }
+  try {
+    const r = await fetch(url, { method: 'HEAD', cache: 'no-store' });
+    if (!r.ok) console.warn('ไม่พบไฟล์:', url, r.status);
+    return r.ok;
+  } catch (e) { console.warn('โหลดไฟล์ไม่ได้:', url, e); return false; }
 }
 const pngCorners = () => {
   const [w, s, e, n] = CONFIG.bbox;
@@ -131,7 +156,7 @@ function buildLayerList() {
                  ...OVERLAYS];
   document.getElementById('layerList').innerHTML = items.map(o => `
     <label class="layer-row">
-      <input type="checkbox" data-id="${o.id}" ${o.on ? 'checked' : ''} ${o.available ? '' : 'disabled'}>
+      <input type="checkbox" data-id="${o.id}" ${o.on && o.available ? 'checked' : ''} ${o.available ? '' : 'disabled'}>
       ${o.label} ${o.available ? '' : '<span class="na">(ยังไม่มีไฟล์ PNG)</span>'}
     </label>`).join('');
   document.querySelectorAll('#layerList input').forEach(cb => cb.addEventListener('change', e => {
@@ -273,6 +298,7 @@ map.on('load', async () => {
   addVectorLayers();
   await addOverlays();
   buildLayerList();
+  buildBasemapList();
   bindControls();
   update();
 });
