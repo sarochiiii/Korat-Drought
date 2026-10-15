@@ -14,8 +14,8 @@
 /* ---------- ส่วนที่ 1 CONFIG ---------- */
 const CONFIG = {
   demo: false,                                   // false เมื่อใช้ข้อมูลจริง
-  districtsUrl: 'data/demo_districts.geojson',  // → 'data/korat_drought_districts.geojson'
-  provinceUrl:  'data/demo_province.csv',       // → 'data/korat_drought_province.csv'
+  districtsUrl: 'data/korat_drought_districts.geojson',  // → 'data/korat_drought_districts.geojson'
+  provinceUrl:  'data/korat_drought_province.csv',       // → 'data/korat_drought_province.csv'
   pngDir: 'data/png/',
   bbox: [101.15, 14.10, 103.05, 15.83],         // ต้องตรงกับ BBOX ในสคริปต์ GEE
   nameField: 'amp_th',
